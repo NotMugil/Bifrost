@@ -115,6 +115,10 @@ impl ScrcpyManager {
                     break;
                 }
 
+                if frame_count < 5 {
+                    println!("[Bifrost Scrcpy] Packet Size: {}, First 4 bytes: {:?}", packet_size, &packet[0..std::cmp::min(4, packet.len())]);
+                }
+
                 // Broadcast packet to WebSocket clients (React frontend)
                 let bytes = Bytes::from(packet);
                 if sender.send(bytes).is_err() {

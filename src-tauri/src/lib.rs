@@ -11,7 +11,7 @@ mod transfer;
 
 use std::sync::Mutex;
 use tokio::sync::Mutex as AsyncMutex;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Manager, State, Emitter};
 pub use adb::{Device, device::ConnectionType};
 use network::ConnectionState;
 use network::mdns::MdnsDiscovery;
@@ -222,7 +222,7 @@ async fn connect_device(device_id: String, app_handle: AppHandle, state: State<'
 
     if !reverse_result.status.success() {
         let err_msg = String::from_utf8_lossy(&reverse_result.stderr);
-        error!("adb reverse failed: {}", err_msg);
+        eprintln!("adb reverse failed: {}", err_msg);
         return Err(format!("ADB Device not found or offline. Please click 'Scan for Devices' and connect to the correct physical device. Error: {}", err_msg));
     }
 
@@ -244,7 +244,7 @@ async fn connect_device(device_id: String, app_handle: AppHandle, state: State<'
 
     if !start_result.status.success() {
         let err_msg = String::from_utf8_lossy(&start_result.stderr);
-        error!("Failed to start android service: {}", err_msg);
+        eprintln!("Failed to start android service: {}", err_msg);
         return Err(format!("Failed to start companion app on phone. Error: {}", err_msg));
     }
 

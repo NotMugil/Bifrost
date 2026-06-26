@@ -22,6 +22,7 @@ export default function DevicePanel() {
   const {
     devices,
     connectionState,
+    connectedDevice,
     setDevices,
     setConnectedDevice,
     setConnectionState,
@@ -227,7 +228,7 @@ export default function DevicePanel() {
                     <div className="flex items-center gap-3">
                       {/* Device icon */}
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-                        device.isConnected
+                        connectedDevice?.id === device.id
                           ? 'bg-success/15 text-success'
                           : 'bg-bg-surface text-text-muted border border-border'
                       }`}>
@@ -278,15 +279,15 @@ export default function DevicePanel() {
                     {/* Connect/Disconnect button */}
                     <button
                       onClick={() =>
-                        device.isConnected ? handleDisconnect() : handleConnect(device)
+                        connectedDevice?.id === device.id ? handleDisconnect() : handleConnect(device)
                       }
                       className={`ml-auto flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                        device.isConnected
+                        connectedDevice?.id === device.id
                           ? 'bg-danger-muted text-danger hover:bg-danger/20'
                           : 'bg-gradient-to-r from-accent to-accent-violet text-white shadow-sm shadow-accent-glow/20 hover:shadow-accent-glow/40 hover:scale-[1.02] active:scale-[0.98]'
                       }`}
                     >
-                      {device.isConnected ? (
+                      {connectedDevice?.id === device.id ? (
                         <>
                           <Unlink className="w-3 h-3" />
                           Disconnect
