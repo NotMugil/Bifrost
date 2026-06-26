@@ -99,4 +99,14 @@ impl Database {
         }
         Ok(devices)
     }
+
+    pub fn delete_device(&self, id: &str) -> Result<(), DbError> {
+        self.conn.execute("DELETE FROM devices WHERE id = ?1", params![id])?;
+        Ok(())
+    }
+
+    pub fn rename_device(&self, id: &str, name: &str) -> Result<(), DbError> {
+        self.conn.execute("UPDATE devices SET name = ?1 WHERE id = ?2", params![name, id])?;
+        Ok(())
+    }
 }

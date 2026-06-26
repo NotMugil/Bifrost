@@ -137,6 +137,7 @@ class ConnectionService : Service() {
                     .apply()
                 
                 updateNotification("Connected to Bifrost Desktop")
+                sendWallpaper(webSocket)
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -414,8 +415,52 @@ class ConnectionService : Service() {
         manager.notify(1, notification)
     }
 
+    private fun sendWallpaper(webSocket: WebSocket) {
+        try {
+            val wallpaperManager = android.app.WallpaperManager.getInstance(this)
+            var bytes: ByteArray? = null
+            
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                try {
+                    val pfd = wallpaperManager.getWallpaperFile(android.app.WallpaperManager.FLAG_SYSTEM)
+                    if (pfd != null) {
+                        val fileDescriptor = pfd.fileDescriptor
+                        val inputStream = java.io.FileInputStream(fileDescriptor)
+                        bytes = inputStream.readBytes()
+                        pfd.close()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("BifrostWS", "Failed to read wallpaper file: " + e.message)
+                }
+            }
+            
+            if (bytes == null) {
+                val drawable = wallpaperManager.drawable
+                if (drawable != null) {
+                    val bitmap = (drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+                    if (bitmap != null) {
+                        val stream = java.io.ByteArrayOutputStream()
+                        bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 95, stream)
+                        bytes = stream.toByteArray()
+                    }
+                }
+            }
+            
+            if (bytes != null) {
+                val b64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                val message = JSONObject().apply {
+                    put("type", "wallpaper_update")
+                    put("data", b64)
+                }.toString()
+                webSocket.send(message)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("BifrostWS", "Failed to send wallpaper: " + e.message)
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
-    
+
     override fun onDestroy() {
         super.onDestroy()
         stopConnection()
